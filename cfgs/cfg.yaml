@@ -1,0 +1,118 @@
+font_path: font/simhei.ttf
+checkpoint_dir: checkpoints/
+save_path: results/
+
+# traing setting
+train_cfg :
+  # 可视化训练数据集
+  vis_train_data : false
+  vis_train_data_path: results/vis_train/
+
+  # 可视化计算损失函数时的匹配结果
+  vis_match_result: false
+  vis_match_result_path: results/vis_train_match/
+
+  # 可视化body和head
+  vis_body_and_head_match: false
+  vis_body_and_head_match_path: results/vis_body_and_head_match/
+
+  optimizer_type: adamW
+  batch_size: 2
+  num_workers: 32
+  pin_memory: false
+
+  lr: 0.00005
+  weight_decay: 0.0001
+  record_file: train.log
+  seed: 666
+  dropout: 0.1
+  start_epoch: 1
+  epochs: 121
+  beta1: 0.9
+  beta2: 0.999
+  amsgrad: false
+  # lr_scheduler
+  step_size: 10
+  gamma: 0.8
+
+  vis_and_log_interval: 1
+  clip_max_norm: 0.1
+
+val_cfg :
+  batch_size: 1
+  num_workers: 64
+  val_interval : 5
+  gt_path: /DataSets/CrowdHuman/body_head_annotations/instances_val_full_bhf_new.json
+  # 可视化检测结果
+  plot_boxes: false
+  evaluate_result_file: result.log
+  vis_and_log_interval: 1
+  debug: false
+
+model_cfg:
+  model_name: deformable_detr
+  body: true
+  head: true
+
+  bh: true
+  aux_loss: true
+  with_box_refine: true
+  two_stage: false
+
+  num_queries: 1000
+  evaluate_thr: 0.01
+  match_iou_thr: 0.85
+  inference_thr: 0.5
+
+deformable_detr:
+  # Number of encoding layers in the transformer
+  enc_layers: 6
+  # Number of decoding layers in the transformer
+  dec_layers: 6
+  hidden_dim: 288
+  nheads: 8
+  dim_feedforward: 2048
+  num_feature_levels: 4
+  dec_n_points: 4
+  enc_n_points: 4
+  head_query_false_positive_prob: 1
+
+  matcher:
+    # Class coefficient in the matching cost
+    set_cost_class: 1.0
+    # L1 box coefficient in the matching cost
+    set_cost_bbox: 5.0
+    # giou box coefficient in the matching cost
+    set_cost_giou: 2.0
+
+  loss_coef:
+    cls_loss_coef: 1.0
+    bbox_loss_coef: 5.0
+    giou_loss_coef: 2.0
+
+    cls_loss_head_decoder_coef: 1.0
+    bbox_loss_head_decoder_coef: 5.0
+    giou_loss_head_decoder_coef: 2.0
+
+  focal_loss:
+    focal_loss: true
+    focal_alpha: 0.25
+    focal_gamma: 2
+
+  transformer:
+    activation : relu
+
+  backbone:
+    name: resnet50
+    position_embedding: sine
+    dilation: false
+
+dataset_cfg :
+  dataset: CrowdHuman
+  crowdhuman_path : /DataSets/CrowdHuman/
+  class_names: [background, person, head] # [0, 1, 2]
+  img_transform:
+    max_size: 1333
+    val_width: 800
+  overflow_boxes: false
+  masks: false
